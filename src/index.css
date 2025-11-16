@@ -1,0 +1,587 @@
+/* =========================
+   THEME COLORS (ปรับง่าย)
+   ========================= */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.35);
+  --glass-shadow: rgba(0, 0, 0, 0.35);
+
+  /* พื้นหลังไล่เฉดม่วง-ฟ้า + overlay */
+  --bg-overlay-1: rgba(18, 18, 30, 0.55);
+  --bg-overlay-2: rgba(18, 18, 30, 0.55);
+
+  /* ข้อความ/เงา */
+  --text: #ffffff;
+  --text-shadow: rgba(0, 0, 0, 0.55);
+
+  /* ปุ่ม YES: เขียวมินต์นีออน */
+  --yes-1: #22e1a8;
+  --yes-2: #0ccf8d;
+  --yes-border: #0aa978;
+
+  /* ปุ่ม NO: ชมพู-แดงนีออน */
+  --no-1: #ff6b9a;
+  --no-2: #ff4d6d;
+  --no-border: #d03a56;
+
+  /* ปุ่มทั่วไป (ดำเทา/ฟ้าไฟฟ้า) */
+  --btn-1: #5b7cfa;
+  --btn-2: #4a67e8;
+  --btn-border: #354bb8;
+
+  /* เส้น dashed โฟกัสปุ่ม */
+  --focus: #ffe066;
+}
+
+/* =========================
+     BASE & BACKGROUND
+     ========================= */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Press Start 2P", monospace;
+  font-weight: 400;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  color: var(--text);
+}
+
+/* background เดิม + overlay สี */
+html {
+  background: linear-gradient(var(--bg-overlay-1), var(--bg-overlay-2)),
+    url("https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2FmY2tlMHYxZWo0d29mbnI1YmVhb2JqcXd3eGx4YXUzemdlcDNlMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/12OJnwNHikFE9W/giphy.gif")
+      no-repeat center center fixed;
+  background-size: cover;
+  font-family: "Press Start 2P", cursive;
+}
+
+/* =========================
+     LAYOUT & CARD (GLASS)
+     ========================= */
+.val-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.val-card {
+  width: min(680px, 92vw);
+  padding: 16px 14px;
+  text-align: center;
+
+  /* glass */
+  background: var(--glass-bg);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+
+  /* เงาด้านนอก + เงาด้านในพอกรุบกริบ */
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35),
+    0 0 0 2px rgba(255, 255, 255, 0.06) inset;
+}
+
+/* =========================
+     TEXT
+     ========================= */
+.val-text {
+  margin: 16px 0 4px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-shadow: 0 2px 0 var(--text-shadow);
+}
+
+.big-text {
+  font-size: 20px !important;
+}
+
+.val-text,
+.big-text,
+button,
+.button,
+.yes-button,
+.no-button {
+  font-family: "Press Start 2P", monospace !important;
+  font-weight: 400 !important;
+}
+
+/* =========================
+     IMAGE (8-bit vibe)
+     ========================= */
+.gif,
+.val-card img {
+  max-width: min(520px, 86vw);
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  border-radius: 12px;
+  box-shadow: 0 8px 0 var(--glass-shadow);
+  animation: floaty 3s ease-in-out infinite;
+}
+
+@keyframes floaty {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+/* =========================
+     BUTTONS (neon gradients)
+     ========================= */
+.button {
+  display: inline-block;
+  border: 0;
+  color: #fff;
+  text-align: center;
+  padding: 12px 18px;
+  margin: 10px 12px 0;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 10px;
+
+  /* ปุ่มนูน */
+  box-shadow: 0 6px 0 var(--glass-shadow);
+  transform: translateY(0);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease,
+    opacity 0.15s ease;
+}
+
+/* ปุ่ม default (เช่น START) */
+.button.primary {
+  background: linear-gradient(180deg, var(--btn-1), var(--btn-2));
+  border: 2px solid var(--btn-border);
+}
+
+/* ปุ่ม YES */
+.yes-button {
+  background: linear-gradient(180deg, var(--yes-1), var(--yes-2));
+  border: 2px solid var(--yes-border);
+  animation: nudge 1.8s ease-in-out infinite;
+}
+
+/* ปุ่ม NO */
+.no-button {
+  background: linear-gradient(180deg, var(--no-1), var(--no-2));
+  border: 2px solid var(--no-border);
+}
+
+/* states */
+.button:hover {
+  filter: brightness(1.07);
+  transform: translateY(-2px);
+  box-shadow: 0 9px 0 var(--glass-shadow);
+}
+
+.button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 0 var(--glass-shadow);
+}
+
+.button:focus-visible {
+  outline: 3px dashed var(--focus);
+  outline-offset: 3px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ล่อให้กด Yes หน่อย 😆 */
+@keyframes nudge {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+  }
+  70% {
+    transform: translateY(-3px);
+  }
+  80% {
+    transform: translateY(0);
+  }
+  90% {
+    transform: translateY(-2px);
+  }
+}
+
+/* =========================
+     RESPONSIVE
+     ========================= */
+@media (max-width: 420px) {
+  .val-text {
+    font-size: 0.95rem;
+  }
+  .button {
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+}
+
+.ig-fixed {
+  position: fixed; /* ล็อกตำแหน่ง */
+  top: 12px; /* ห่างจากขอบบน */
+  right: 12px; /* ห่างจากขอบขวา */
+  z-index: 9999; /* ทับทุกอย่าง */
+  background: #171F3(247, 245, 245, 0.45);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.ig-fixed {
+  background: rgba(243, 232, 214, 0.55); /* แปลง #F3E8D6 เป็นโปร่งใส */
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(6px);
+  color: #000;
+}
+.ig-fixed {
+  font-size: 14px; /* เดิม 12px → ใหญ่ขึ้น */
+  padding: 10px 10px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* ป้องกันภาพกะพริบด้วยการเฟดอิน */
+.gif {
+  opacity: 0;
+  transition: opacity 0.25s ease; /* เฟดนุ่มนวล */
+  will-change: opacity, transform;
+  /* ขนาดตายตัวกัน layout shift บนมือถือ */
+  max-width: min(520px, 86vw);
+  width: 100%;
+  height: auto;
+}
+.gif.loaded {
+  opacity: 1; /* รูปโหลดเสร็จค่อยโชว์ */
+}
+
+/* ปรับปุ่ม/การ์ดให้มือถือดูดีขึ้น */
+.val-card {
+  width: min(560px, 92vw);
+  padding: 18px 14px;
+}
+@media (max-width: 420px) {
+  .button {
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+  .val-text {
+    font-size: 0.95rem;
+  }
+}
+
+/* กันแถบสถานะ/ขอบจอบน iPhone */
+html,
+body,
+.val-container {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* =========================
+     RESTART BUTTON (สี #FF9804)
+   ========================= */
+.restart-button {
+  background: linear-gradient(180deg, #ffb347, #ff9804);
+  border: 2px solid #d47603;
+  color: #fff;
+}
+
+/* hover → เด้งขึ้นนิดนึง + สว่างขึ้น */
+.restart-button:hover {
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+  box-shadow: 0 9px 0 var(--glass-shadow);
+}
+
+/* active → กดลง */
+.restart-button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 0 var(--glass-shadow);
+}
+
+.hamster-name-overlay {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  padding: 6px 14px;
+  border-radius: 8px;
+
+  font-size: 14px;
+  color: #ffffff; /* สีดำอ่านง่ายกว่าบนพื้นครีม */
+  font-family: "Press Start 2P", monospace;
+
+  /* 🤍 พื้นหลังโทนครีม #F3E8D6 */
+  background: linear-gradient(180deg, #fff5e9, #a64a19);
+  border: 2px solid #d6c7b1;
+
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.25);
+}
+.reset-btn {
+  background: #f3e8d6; /* ← สีพื้นหลังใหม่ */
+  color: #000; /* สีไอคอน ✎ */
+  border: none;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* =========================
+   GLOBAL 8-bit FONT: Pixelify Sans
+   ========================= */
+:root {
+  --font-all: "Pixelify Sans", sans-serif;
+}
+
+/* ใช้ฟอนต์เดียวทั้งเว็บ */
+html,
+body,
+.val-container,
+.val-card,
+.val-text,
+.big-text,
+button,
+.button,
+.yes-button,
+.no-button,
+.restart-button,
+.reset-btn,
+label,
+.label,
+input,
+textarea,
+select,
+.small-text,
+.hint,
+.ig-fixed,
+.hamster-name-overlay {
+  font-family: var(--font-all) !important;
+  font-weight: 400 !important;
+}
+.hamster-name-overlay {
+  font-size: 15px; /* เดิม ~14px → เพิ่มให้ใหญ่ขึ้น */
+  padding: 8px 18px; /* เพิ่ม padding ให้บาลานซ์ */
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+/* placeholder */
+input::placeholder,
+textarea::placeholder {
+  font-family: var(--font-all) !important;
+  opacity: 0.7;
+}
+
+.back-start {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 9999;
+  background: rgba(243, 232, 214, 0.55); /* แปลง #F3E8D6 เป็นโปร่งใส */
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #000;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 18px;
+  font-family: "Pixelify Sans", sans-serif;
+  cursor: pointer;
+
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.back-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 0 rgba(0, 0, 0, 0.35);
+}
+
+.back-start:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.35);
+}
+/* ===== Mini layout (small screen) ===== */
+.app-shell.mini {
+  display: flex;
+  gap: 8px;
+  width: 640px; /* total width (sidebar + game) */
+  max-width: 100%;
+  margin: 16px auto;
+  padding: 10px;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.08);
+}
+
+.spotify-sidebar.mini {
+  width: 240px; /* compact sidebar */
+  min-width: 220px;
+  padding: 10px;
+  background: #f7f7f7;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spotify-header {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.spotify-input {
+  display: flex;
+  gap: 6px;
+}
+
+.main-pane.mini {
+  flex: 1;
+  min-width: 0;
+}
+
+.val-container.mini {
+  display: flex;
+  justify-content: center;
+}
+
+.val-card.mini {
+  width: 340px; /* compact game card */
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.gif-wrapper.mini {
+  display: flex;
+  justify-content: center;
+}
+.gif.mini {
+  width: 260px;
+  height: auto;
+}
+
+/* Small controls */
+.button.thin {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.input.thin {
+  height: 32px;
+  font-size: 13px;
+}
+
+/* Search results list */
+.spotify-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 38vh;
+  overflow: auto;
+  padding-right: 2px;
+}
+.result-row {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+.result-row:hover {
+  background: #f3f3f3;
+}
+.thumb-fallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: #ddd;
+}
+.result-meta {
+  min-width: 0;
+}
+.result-title {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.result-sub {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spotify-placeholder {
+  font-size: 13px;
+  color: #666;
+  padding: 10px;
+  border: 1px dashed #ccc;
+  border-radius: 10px;
+}
+
+.spotify-results {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 40vh;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.result-row {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  cursor: pointer;
+}
+
+.result-row:hover {
+  background: #f3f3f3;
+}
+
+.thumb-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: #ddd;
+}
+
+.result-meta {
+  min-width: 0;
+}
+
+.result-title {
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-sub {
+  font-size: 12px;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
