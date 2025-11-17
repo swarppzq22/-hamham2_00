@@ -173,6 +173,7 @@ function incLocalFeedCount(ig: string) {
   obj[key] = (obj[key] || 0) + 1;
   localStorage.setItem(LS_KEYS.localFeedCount, JSON.stringify(obj));
 }
+
 function getLocalTopN(n = 3): Array<{ ig: string; count: number }> {
   const raw = localStorage.getItem(LS_KEYS.localFeedCount);
   const obj = raw ? (JSON.parse(raw) as Record<string, number>) : {};
@@ -180,6 +181,50 @@ function getLocalTopN(n = 3): Array<{ ig: string; count: number }> {
     .map(([ig, count]) => ({ ig, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, n);
+}
+
+/** 🔹 ดึงจำนวน feed สำหรับ IG หนึ่งคนจาก localStorage (fallback) */
+function getLocalFeedCountFor(ig: string): number {
+  const key = normalizeIG(ig);
+  if (!key) return 0;
+  const raw = localStorage.getItem(LS_KEYS.localFeedCount);
+  const obj = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+  return Number(obj[key] || 0);
+}
+
+/** ⭐ ดึงจำนวน Feed "ทั้งหมด" ของ IG นี้จาก Google Sheet (รวมทุกวัน / ทุกเครื่อง)
+ *    - ถ้าออนไลน์โอเค → คืนค่าเป็น number (0+)
+ *    - ถ้าเน็ต/ชีตพัง → คืน null ให้ไป fallback เป็น local
+ */
+async function fetchMyTotalFeed(ig: string): Promise<number | null> {
+  const key = normalizeIG(ig);
+  if (!key) return null;
+
+  const url = `${SHEET_ENDPOINT}?leaderboard=1&limit=9999`;
+
+  try {
+    const res = await fetchWithTimeout(url, 6000);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+    const json = JSON.parse(text);
+    const data = Array.isArray(json?.data)
+      ? mergeIGCaseInsensitive(json.data)
+      : [];
+
+    const row = data.find((r) => normalizeIG(r.ig) === key);
+    if (!row) return 0;
+    return Number(row.count || 0);
+  } catch (e: any) {
+    try {
+      const j: any = await jsonp(url, 8000);
+      const data = Array.isArray(j?.data) ? mergeIGCaseInsensitive(j.data) : [];
+      const row = data.find((r) => normalizeIG(r.ig) === key);
+      if (!row) return 0;
+      return Number(row.count || 0);
+    } catch {
+      return null;
+    }
+  }
 }
 
 /* ====== Preload helper ====== */
@@ -281,7 +326,6 @@ const Top3Box = memo(function Top3Box(props: {
 }) {
   const { items, loading, error, onRefresh, mobile } = props;
 
-  // ✅ มือถือให้วางมุมขวาล่างแบบเล็กเสมอ
   const base: React.CSSProperties = {
     position: "fixed",
     right: mobile ? 10 : 14,
@@ -308,8 +352,6 @@ const Top3Box = memo(function Top3Box(props: {
     fontSize: mobile ? 12 : 12,
     borderRadius: 8,
     lineHeight: 1.1,
-
-    /* 🎨 ปุ่ม Refresh สีเขียวมินต์ */
     background: "#3ee680",
     color: "#000",
     border: "1px solid #2fbf68",
@@ -466,8 +508,20 @@ export default function App() {
   const [lbLoading, setLbLoading] = useState<boolean>(false);
   const [lbError, setLbError] = useState<string | null>(null);
 
+  // 🔹 จำนวนครั้งที่ผู้เล่นคนนี้กด Feed (อ่านจากชีตรวมทุกวัน + fallback local)
+  const [myFeedCount, setMyFeedCount] = useState<number>(0);
+
   // กันเรียกซ้อน (ทำให้ลื่น)
   const refreshingRef = useRef(false);
+
+  const hasChoices =
+    screen === "ham1" ||
+    screen === "ham2" ||
+    screen === "ham3" ||
+    screen === "ham4";
+  const displayHamsterName =
+    localStorage.getItem(LS_KEYS.hamsterName) || hamsterName;
+  const displayIG = localStorage.getItem(LS_KEYS.playerIG) || playerIG;
 
   const refreshLeaderboard = async () => {
     if (refreshingRef.current) return;
@@ -490,7 +544,7 @@ export default function App() {
     refreshingRef.current = false;
   };
 
-  // ออโต้รีเฟรชแบบลื่น: ใช้ setTimeout loop + pause ตอนแท็บไม่โฟกัส
+  // ออโต้รีเฟรช leaderboard (ไม่ยุ่งกับ myFeedCount)
   useEffect(() => {
     let timer: number | undefined;
 
@@ -517,29 +571,52 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen]);
 
-  const hasChoices =
-    screen === "ham1" ||
-    screen === "ham2" ||
-    screen === "ham3" ||
-    screen === "ham4";
-  const displayHamsterName =
-    localStorage.getItem(LS_KEYS.hamsterName) || hamsterName;
-  const displayIG = localStorage.getItem(LS_KEYS.playerIG) || playerIG;
+  // 🔹 sync myFeedCount ตาม IG ปัจจุบัน
+  //    - ถ้าออนไลน์ → ใช้ค่าจากชีต (รวมทุกวัน / ทุกเครื่อง)
+  //    - ถ้าเน็ต/ชีตล่ม → ใช้ค่าจาก localStorage แทน
+  useEffect(() => {
+    if (!displayIG) {
+      setMyFeedCount(0);
+      return;
+    }
+
+    (async () => {
+      const backendCount = await fetchMyTotalFeed(displayIG);
+      if (backendCount == null) {
+        const localCount = getLocalFeedCountFor(displayIG);
+        setMyFeedCount(localCount);
+      } else {
+        setMyFeedCount(backendCount);
+      }
+    })();
+  }, [displayIG]);
 
   const handleYes = () => {
-    // อัปเดตคะแนนในเครื่องให้เห็นขยับทันที
     if (displayIG) {
-      incLocalFeedCount(displayIG);
+      const ig = normalizeIG(displayIG);
+
+      // อัปเดตใน localStorage ไว้เป็น backup เวลา offline
+      incLocalFeedCount(ig);
+
+      // ให้เลขเด้งขึ้นทันที 1 ครั้ง
+      setMyFeedCount((prev) => prev + 1);
+
       setLeaderboard(getLocalTopN(3));
       logToSheet({
         hamsterName: displayHamsterName?.trim(),
-        playerIG: normalizeIG(displayIG),
+        playerIG: ig,
         event: "feed",
       });
 
-      // ดึงอันดับจากออนไลน์ตามหลังให้ sync กับชีตจริง
+      // ดึงค่าจริงจากชีตมาตามหลัง
       setTimeout(() => {
-        refreshLeaderboard();
+        (async () => {
+          const remote = await fetchMyTotalFeed(ig);
+          if (remote != null) {
+            setMyFeedCount((prev) => Math.max(prev, remote));
+          }
+          refreshLeaderboard();
+        })();
       }, 800);
     }
 
@@ -574,22 +651,58 @@ export default function App() {
         )}
 
         {screen !== "onboarding" && (
-          <div
-            className="ig-fixed"
-            style={{
-              padding: isMobile ? "6px 10px" : undefined,
-              fontSize: isMobile ? 14 : undefined,
-            }}
-          >
-            👫 {normalizeIG(displayIG)}
-            <button
-              className="reset-btn"
-              onClick={enterEditProfile}
-              aria-label="Edit name/IG"
+          <>
+            {/* 🔵 กล่อง IG (มุมขวาบน) */}
+            <div
+              style={{
+                position: "fixed",
+                top: 10,
+                right: 10,
+                padding: isMobile ? "6px 10px" : "8px 12px",
+                background: "rgba(0,0,0,0.55)",
+                borderRadius: 10,
+                border: "1px solid rgba(255,255,255,0.2)",
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                color: "#fff",
+                fontSize: isMobile ? 14 : 15,
+                fontWeight: 600,
+                zIndex: 1000,
+              }}
             >
-              ✎
-            </button>
-          </div>
+              👫 {normalizeIG(displayIG)}
+              <button
+                className="reset-btn"
+                onClick={enterEditProfile}
+                aria-label="Edit name/IG"
+              >
+                🍄
+              </button>
+            </div>
+
+            {/* 🟠 กล่อง Cookie Counter (อยู่ใต้ IG และชิดขวา) */}
+            <div
+              style={{
+                position: "fixed",
+                top: isMobile ? 50 : 54,
+                right: 10,
+                padding: isMobile ? "4px 10px" : "6px 12px",
+                background: "rgba(0,0,0,0.55)",
+                borderRadius: 999,
+                border: "1px solid rgba(255,255,255,0.2)",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                color: "#fff",
+                fontSize: isMobile ? 13 : 14,
+                fontWeight: 700,
+                zIndex: 1000,
+              }}
+            >
+              🍪 <span>{myFeedCount}</span>
+            </div>
+          </>
         )}
 
         <div
